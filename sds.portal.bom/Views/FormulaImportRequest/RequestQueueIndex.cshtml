@@ -1,0 +1,134 @@
+﻿@model IEnumerable<SDS.SDSRequest.Models.FormulaImportRequestQueueItem>
+
+@{
+    ViewBag.Title = "Request Queue";
+}
+
+<h2>Request Queue</h2>
+
+<p>
+    @Html.ActionLink("Back to Requests", "DepotRequestIndex", "FormulaImportRequest", null, null)
+</p>
+<table class="table">
+    <tr>
+        <th></th>
+        <th></th>
+        <th>
+            @Html.DisplayNameFor(model => model.RequestId)
+        </th>
+
+        <th>
+            @Html.DisplayNameFor(model => model.Requested_Part)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Processed_PartKey)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Processed_PartName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PartTypeName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PartStatusName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.LoadStatusMessage)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ValidationStatus)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.BOSSubCompPercent)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CreatedTimestamp)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.StartTimestamp)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CompleteTimestamp)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ExitTimestamp)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.IsSDSSpecificBOS)
+        </th>
+
+
+        <th>
+            @Html.DisplayNameFor(model => model.UpdatedBy)
+        </th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.ActionLink("View PASS SDS BOS", "RequestQueueItemBOSIndex", "FormulaImportRequest", new { RequestQueueId = item.RequestQueueId }, null)
+        </td>
+
+        <td>
+            @Html.ActionLink("View PASS & Logged Messages", "RequestQueueItemMessagesIndex", "FormulaImportRequest", new { RequestQueueId = item.RequestQueueId }, null)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.RequestId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Requested_Part)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Processed_PartKey)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Processed_PartName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PartTypeName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PartStatusName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.LoadStatusMessage)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ValidationStatus)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.BOSSubCompPercent)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CreatedTimestamp)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.StartTimestamp)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CompleteTimestamp)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ExitTimestamp)
+        </td>
+        <td>
+            @Html.DisplayTextFor(modelItem => item.IsSDSSpecificBOS)
+        </td>
+
+
+        <td>
+            @Html.DisplayFor(modelItem => item.UpdatedBy)
+        </td>
+
+        <td>
+            <!--
+        @Html.ActionLink("View SDS BOS", "RequestQueueItemBOSIndex", "FormulaImportRequest", new { RequestQueueId = item.RequestQueueId }, null)
+        @Html.ActionLink("Edit", "Edit", new { id = item.RequestQueueId }) |
+        @Html.ActionLink("Details", "Details", new { id = item.RequestQueueId }) |
+        @Html.ActionLink("Delete", "Delete", new { id = item.RequestQueueId })
+        -->
+        </td>
+    </tr>
+}
+
+</table>

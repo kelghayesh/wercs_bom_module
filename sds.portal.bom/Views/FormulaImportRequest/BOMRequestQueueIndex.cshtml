@@ -1,0 +1,132 @@
+﻿@model IEnumerable<SDS.SDSRequest.Models.BOMRequestQueueItem>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>BOM Request Detail</h2>
+@section Scripts
+{
+    <script>
+        $(function () {
+            //alert("All good");  this will alwayd display
+        });
+    </script>
+}
+<p>
+    <!-- @Html.ActionLink("Create New", "Create") -->
+    <a href="~/pages/target_bom_req.aspx">Generate New BOM Request</a>
+</p>
+<table class="table" style="overflow:auto" width="1000">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.RequestId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.RequestQueueId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.BOMTargetKey)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.MaterialKey)
+        </th>
+
+        <th>
+            @Html.DisplayNameFor(model => model.MaterialPercent)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ValidationStatus)
+        </th>
+
+        <th>
+            @Html.DisplayNameFor(model => model.UpdatedBy)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.RequestId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.RequestQueueId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.BOMTargetKey)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.MaterialKey)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.MaterialPercent)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ValidationStatus)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UpdatedBy)
+        </td>
+        <!--
+    <td>
+        @Html.ActionLink("View Request Queue", "RequestQueueIndex", "FormulaImportRequest", new { id = item.RequestId, productKeyList = "", sourceSystem = item.SourceSystem }, null)
+    </td>
+    <td>
+        @Html.ActionLink(
+            "Process BOM Request",
+            "StageBOMRequest",
+            "FormulaImportRequest",
+            new { confirm = true, id = item.RequestId },
+            new { onclick = "return confirm('This process takes time to complete. Are you sure you want to continue?')" })
+
+
+    </td>
+    -->
+        <td>
+            @Html.ActionLink(
+                "View BOM Request Status",
+                "RedirectToBOMStatusPage",
+                "FormulaImportRequest",
+                new { RequestId = item.RequestId.ToString() }, null)
+
+            <!--<a href="~/pages/target_bom_result.aspx?RequestId=264&targetFormulaKey=SDSOWND_Target_09">View BOM Request Status</a>-->
+        </td>
+        <!--
+    <td>
+        @using (Html.BeginForm("RequestQueueExport", "FormulaImportRequest", new { id = item.RequestId, sourceSystem = item.SourceSystem }, FormMethod.Post, null))
+        {
+            @Html.HiddenFor(modelItem => item.RequestId, new { id = "id" })
+            <a href="#" onclick="$(this).closest('form').submit()">Export Request Report</a>
+        }
+    </td>
+    -->
+        <td>
+            @Html.ActionLink("View Request Activities", "RequestActivitiesIndex", "FormulaImportRequest", new { id = item.RequestId }, null)
+        </td>
+
+        <td>
+            @Html.ActionLink("View Request Queue", "BOMRequestQueueIndex", "FormulaImportRequest", new { id = item.RequestId, productKeyList = "", sourceSystem = item.SourceSystem }, null)
+        </td>
+        <!--
+    <td>
+        @Html.ActionLink(
+            "Delete Entire Request",
+            "DeleteAction",
+            "FormulaImportRequest",
+            new { confirm = true, id = item.RequestId },
+            new { onclick = "return confirm('Are you sure you want to delete this request?')" })
+    </td>
+    -->
+        <!--
+    <td>
+        @Html.ActionLink("Edit", "Edit", new { id = item.RequestId }) |
+        @Html.ActionLink("Details", "Details", new { id = item.RequestId }) |
+        @Html.ActionLink("Delete", "Delete", new { id = item.RequestId })
+    </td>
+    -->
+    </tr>
+    }
+
+</table>

@@ -1,0 +1,162 @@
+﻿@model IEnumerable<SDS.SDSRequest.Models.SDSBOS>
+
+@{
+    ViewBag.Title = "RequestQueueItemBOSIndex";
+}
+
+<h2>Queue Item BOS</h2>
+
+<p>
+    @if (Model.Count() > 0) {
+        @Html.ActionLink("Back to Request Queue", "RequestQueueIndex", "FormulaImportRequest", new { id = Model.First().RequestId, sourceSystem = Model.First().SourceSystem }, null)
+    }
+</p>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Processed_PartKey)
+        </th>
+
+        <!--
+    <th>
+        @Html.DisplayNameFor(model => model.CompositionTypeName)
+    </th>
+    -->
+
+        <th>
+            @Html.DisplayNameFor(model => model.AdjLow)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AdjTarget)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AdjHigh)
+        </th>
+
+        <th>
+            @Html.DisplayNameFor(model => model.IsDhi)
+        </th>
+
+        <th>
+            @Html.DisplayNameFor(model => model.Level)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Path)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PartKey)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PartCasNumber)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PartName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PartTypeCode)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PartTypeName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PartConfidentialTypeName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PartPlmTypeName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PartPlmPolicyName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PartPlmStateName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PrimaryCASNumber)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PrimaryCASRegion)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.UpdatedBy)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Datestamp)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Processed_PartKey)
+        </td>
+
+        <!--
+    <td>
+        @Html.DisplayFor(modelItem => item.CompositionTypeName)
+    </td>
+    -->
+        <td>
+            @Html.DisplayFor(modelItem => item.AdjLow)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AdjTarget)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AdjHigh)
+        </td>
+
+        <td>
+            @Html.DisplayTextFor(modelItem => item.IsDhi)
+        </td>
+
+        <td>
+            @Html.DisplayFor(modelItem => item.Level)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Path)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PartKey)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PartCasNumber)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PartName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PartTypeCode)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PartTypeName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PartConfidentialTypeName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PartPlmTypeName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PartPlmPolicyName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PartPlmStateName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PrimaryCASNumber)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PrimaryCASRegion)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UpdatedBy)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Datestamp)
+        </td>
+    </tr>
+}
+
+</table>
