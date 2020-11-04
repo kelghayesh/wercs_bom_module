@@ -68,7 +68,7 @@
         </td>
         <!--
     <td>
-        @Html.ActionLink("View Request Queue", "RequestQueueIndex", "FormulaImportRequest", new { id = item.RequestId, productKeyList = "", sourceSystem = item.SourceSystem }, null)
+        @Html.ActionLink("View Request Queue", "RequestQueueIndex", "BOMRequest", new { id = item.RequestId, productKeyList = "", sourceSystem = item.SourceSystem }, null)
     </td>
     <td>
         @Html.ActionLink(
@@ -90,6 +90,14 @@
 
             <!--<a href="~/pages/target_bom_result.aspx?RequestId=264&targetFormulaKey=SDSOWND_Target_09">View BOM Request Status</a>-->
         </td>
+        <td>
+            @Html.ActionLink("View Request Activities", "RequestActivitiesIndex", "FormulaImportRequest", new { id = item.RequestId }, null)
+        </td>
+
+        <td>
+            @Html.ActionLink("View Request Queue", "BOMRequestQueueIndex", "BOMRequest", new { id = item.RequestId, productKeyList = "", sourceSystem = item.SourceSystem }, null)
+        </td>
+
         <!--
     <td>
         @using (Html.BeginForm("RequestQueueExport", "FormulaImportRequest", new { id = item.RequestId, sourceSystem = item.SourceSystem }, FormMethod.Post, null))
@@ -100,30 +108,8 @@
         }
     </td>
     -->
-        <td>
-            @Html.ActionLink("View Request Activities", "RequestActivitiesIndex", "FormulaImportRequest", new { id = item.RequestId }, null)
-        </td>
 
-        <td>
-            @Html.ActionLink("View Request Queue", "BOMRequestQueueIndex", "FormulaImportRequest", new { id = item.RequestId, productKeyList = "", sourceSystem = item.SourceSystem }, null)
-        </td>
-        <!--
-    <td>
-        @Html.ActionLink(
-            "Delete Entire Request",
-            "DeleteAction",
-            "FormulaImportRequest",
-            new { confirm = true, id = item.RequestId, SourceSystem=item.SourceSystem },
-            new { onclick = "return confirm('Are you sure you want to delete this request?')" })
-    </td>
-    -->
-        <!--
-    <td>
-        @Html.ActionLink("Edit", "Edit", new { id = item.RequestId }) |
-        @Html.ActionLink("Details", "Details", new { id = item.RequestId }) |
-        @Html.ActionLink("Delete", "Delete", new { id = item.RequestId })
-    </td>
-    -->
+
     </tr>
     }
 

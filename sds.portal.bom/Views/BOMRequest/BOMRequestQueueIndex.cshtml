@@ -38,6 +38,9 @@
         <th>
             @Html.DisplayNameFor(model => model.ValidationStatus)
         </th>
+        <th>
+            @Html.DisplayNameFor(model => model.LoadStatusMessage)
+        </th>        
 
         <th>
             @Html.DisplayNameFor(model => model.UpdatedBy)
@@ -67,11 +70,14 @@
             @Html.DisplayFor(modelItem => item.ValidationStatus)
         </td>
         <td>
+            @Html.DisplayFor(modelItem => item.LoadStatusMessage)
+        </td>
+        <td>
             @Html.DisplayFor(modelItem => item.UpdatedBy)
         </td>
         <!--
     <td>
-        @Html.ActionLink("View Request Queue", "RequestQueueIndex", "FormulaImportRequest", new { id = item.RequestId, productKeyList = "", sourceSystem = item.SourceSystem }, null)
+        @Html.ActionLink("View BOM Request Queue", "RequestQueueIndex", "FormulaImportRequest", new { id = item.RequestId, productKeyList = "", sourceSystem = item.MaterialSource }, null)
     </td>
     <td>
         @Html.ActionLink(
@@ -83,7 +89,6 @@
 
 
     </td>
-    -->
         <td>
             @Html.ActionLink(
                 "View BOM Request Status",
@@ -91,41 +96,23 @@
                 "FormulaImportRequest",
                 new { RequestId = item.RequestId.ToString() }, null)
 
-            <!--<a href="~/pages/target_bom_result.aspx?RequestId=264&targetFormulaKey=SDSOWND_Target_09">View BOM Request Status</a>-->
         </td>
-        <!--
     <td>
-        @using (Html.BeginForm("RequestQueueExport", "FormulaImportRequest", new { id = item.RequestId, sourceSystem = item.SourceSystem }, FormMethod.Post, null))
+        @using (Html.BeginForm("RequestQueueExport", "FormulaImportRequest", new { id = item.RequestId, sourceSystem = item.MaterialSource }, FormMethod.Post, null))
         {
             @Html.HiddenFor(modelItem => item.RequestId, new { id = "id" })
             <a href="#" onclick="$(this).closest('form').submit()">Export Request Report</a>
         }
     </td>
-    -->
         <td>
-            @Html.ActionLink("View Request Activities", "RequestActivitiesIndex", "FormulaImportRequest", new { id = item.RequestId }, null)
+            @Html.ActionLink("View Request Activities", "RequestActivitiesIndex", "BOMRequest", new { id = item.RequestId }, null)
         </td>
 
         <td>
-            @Html.ActionLink("View Request Queue", "BOMRequestQueueIndex", "FormulaImportRequest", new { id = item.RequestId, productKeyList = "", sourceSystem = item.SourceSystem }, null)
+            @Html.ActionLink("View Request Queue", "BOMRequestQueueIndex", "BOMRequest", new { id = item.RequestId, productKeyList = "", sourceSystem = item.MaterialSource }, null)
         </td>
-        <!--
-    <td>
-        @Html.ActionLink(
-            "Delete Entire Request",
-            "DeleteAction",
-            "FormulaImportRequest",
-            new { confirm = true, id = item.RequestId },
-            new { onclick = "return confirm('Are you sure you want to delete this request?')" })
-    </td>
     -->
-        <!--
-    <td>
-        @Html.ActionLink("Edit", "Edit", new { id = item.RequestId }) |
-        @Html.ActionLink("Details", "Details", new { id = item.RequestId }) |
-        @Html.ActionLink("Delete", "Delete", new { id = item.RequestId })
-    </td>
-    -->
+
     </tr>
     }
 

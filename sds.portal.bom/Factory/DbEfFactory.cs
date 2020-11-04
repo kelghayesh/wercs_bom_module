@@ -742,7 +742,7 @@ namespace SDS.SDSRequest.Factory
         }
 
 
-        public static DepotOperationResultStatus AddDepotBOMRequest(string sourceSystem, string targetKey, List<BOMIngredient> bomRequestIngredients, int rmFormulaLowerLimitValidation, int rmFormulaUpperLimitValidation, string requestDescr, string updatedBy)
+        public static DepotOperationResultStatus AddDepotBOMRequest(string targetKey, List<BOMIngredient> bomRequestIngredients, int rmFormulaLowerLimitValidation, int rmFormulaUpperLimitValidation, string requestDescr, string updatedBy, string RequestSourceSystem)
         //sourceSystem, targetFormulaKey, List<BOMIngredient> bomIngredients, rmFormulaLowerLimitValidation, rmFormulaUpperLimitValidation, bestparts, "Depot", "BOM Request", UpdatedBy
         {
             DepotOperationResultStatus ret = new DepotOperationResultStatus();
@@ -777,11 +777,12 @@ namespace SDS.SDSRequest.Factory
                 new SqlParameter("@BOMProductsXML", BOMProductsXML),
                 new SqlParameter("@RequestStatusId", requestStatusId),
                 new SqlParameter("@UpdatedBy", updatedBy),
-                new SqlParameter("@SourceSystem", sourceSystem),
+                new SqlParameter("@SourceSystem", (object)RequestSourceSystem ?? DBNull.Value),
                 //new SqlParameter("@FPCOverride", (object)fpcOverrideFlag ?? DBNull.Value),
                 newRequestId
             );
                 ret.RequestId = Convert.ToInt32(newRequestId.Value);
+                ret.SuccessMessage = "BOM request saved successfully.";
                 return ret;
             }
             // use requestDescr as RequestType to identify requests as BOM or Formula??  
@@ -821,6 +822,40 @@ namespace SDS.SDSRequest.Factory
             }
         }
 
+        public static DepotOperationResultStatus UpdateBOMRequestDepotFormula(string requestedProducts, int formulaLowerPercentValidation, int formulaUpperPercentValidation, Dictionary<string, DepotPart> depotResults, string source, int BOMRequestId, string BOMRequestTargetKey, string updatedBy)
+        {
+            DepotOperationResultStatus ret = new DepotOperationResultStatus();
+
+            //gcasList.Replace("\r\n", ",");
+            //string gcasListReady = Regex.Replace(gcasList, @"\r\n?|\n", ",");
+
+            string fpcOverrideFlag = null; //y/n
+            int requestStatusId = 0;
+
+            string RequestProductsXML = GetRequestProductsXML(requestedProducts, depotResults);
+            //SDSRequestDbContext db = new SDSRequestDbContext();
+            //WercsDbContext dbwercs = new WercsDbContext();
+            using (SDSRequestDbContext db = new SDSRequestDbContext())
+            {
+                db.Database.ExecuteSqlCommand(@"EXEC usp_FORMULAREQ_FormulaImportRequest_BOMRequestUpdate @GCASCodeList, @LowerPercentValidation, @UpperPercentValidation, @RequestProductsXML, @RequestStatusId, @SourceSystem, @FPCOverride, @BOMRequestId, @BOMRequestTargetKey, @UpdatedBy",
+                new SqlParameter("@GCASCodeList", requestedProducts),
+                new SqlParameter("@LowerPercentValidation", formulaLowerPercentValidation),
+                new SqlParameter("@UpperPercentValidation", formulaUpperPercentValidation),
+                new SqlParameter("@RequestProductsXML", RequestProductsXML),
+                new SqlParameter("@RequestStatusId", requestStatusId),
+                new SqlParameter("@SourceSystem", source),
+                new SqlParameter("@FPCOverride", (object)fpcOverrideFlag ?? DBNull.Value),
+                new SqlParameter("@BOMRequestId", BOMRequestId),
+                new SqlParameter("@BOMRequestTargetKey", (object)BOMRequestTargetKey ?? DBNull.Value),
+                new SqlParameter("@UpdatedBy", updatedBy)
+
+
+                );
+                ret.RequestId = BOMRequestId;
+                return ret;
+            }
+        }
+
         public static DepotOperationResultStatus DeleteDepotFormulaRequest(int requestId, string SourceSystem)
         {
             DepotOperationResultStatus ret = new DepotOperationResultStatus();
@@ -846,13 +881,16 @@ namespace SDS.SDSRequest.Factory
             using (WercsDbContext dbwercs = new WercsDbContext())
             {
                 dbwercs.Database.CommandTimeout = 3000;
-                dbwercs.Database.ExecuteSqlCommand(@"EXEC Xusp_FORMULAREQ_BOMRequest_Process @RequestId, @SourceSystem, @TargetPart ",
+                dbwercs.Database.ExecuteSqlCommand(@"EXEC Xusp_FORMULAREQ_BOMRequest_Process @RequestId,  @TargetPart, @SourceSystem, @populateWercsStaging ",
                             new SqlParameter("@RequestId", requestId),
+                            new SqlParameter("@TargetPart", TargetPart),
                             new SqlParameter("@SourceSystem", SourceSystem),
-                            new SqlParameter("@TargetPart", TargetPart)
+                            new SqlParameter("@populateWercsStaging", 1)
+
                 //,new SqlParameter("@populateWercsStaging", 1)
                 );
                 ret.RequestId = requestId;
+                ret.SuccessMessage = "Saved BOM Request details.";
                 return ret;
             }
         }
@@ -896,8 +934,13 @@ namespace SDS.SDSRequest.Factory
                     uploadStage = 95;
                     bosLoadMessage = "BOS for " + bos_ret.ProcessedPartKey + " loaded with errors: " + bos_ret.ErrorMessage;
                     break;
+                //case string b when b.Contains("bos_load_failed"):
                 case "bos_load_failed":
                     uploadStage = 99;
+                    bosLoadMessage = "BOS Load for " + bos_ret.ProcessedPartKey + " failed: " + bos_ret.ErrorMessage;
+                    break;
+                case "bom_load_failed":
+                    uploadStage = 100;
                     bosLoadMessage = "BOS Load for " + bos_ret.ProcessedPartKey + " failed: " + bos_ret.ErrorMessage;
                     break;
                 case "bos_request_failed":
@@ -985,6 +1028,7 @@ namespace SDS.SDSRequest.Factory
                                 new SqlParameter("@Formulae", errorXML)
                               );
                     ret.ErrorMessage = "Errors logged and exited: " + errorXML;
+                    ret.ResultCount = -1;
                     return ret;
                 }
             }

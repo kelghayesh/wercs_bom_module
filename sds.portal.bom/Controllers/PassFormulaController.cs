@@ -96,7 +96,7 @@ namespace SDS.SDSRequest.Controllers
             DbEfFactory.StartDTE();
 
         }
-        public static DepotOperationResultStatus ProcessDepotBOMRequest(string sourceSystem, string targetFormulaKey, int rmFormulaLowerLimitValidation, int rmFormulaUpperLimitValidation, List<BOMIngredient> bomIngredients, int? existingRequestId = 0)
+        public static DepotOperationResultStatus ProcessDepotBOMRequest(string targetFormulaKey, int rmFormulaLowerLimitValidation, int rmFormulaUpperLimitValidation, List<BOMIngredient> bomIngredients, int? existingRequestId = 0)
         {
             //assumptions: all formulations are in WERCS, so we don't need to go to Depot for anything here.
             //if a formula for a material in the BOM isn't in WERCS, it should be imported into WERCS before starting the BOM formula request
@@ -106,12 +106,21 @@ namespace SDS.SDSRequest.Controllers
             //DepotOperationResultStatus r;
             //string[] lookupKeys = new string[bomIngredients.Count() - 1];
 
-            //List<BOMIngredient> depotParts = bomIngredients.Where(p => p.RMSource.ToLower().Contains("depot")).ToList<BOMIngredient>();
-            List<BOMIngredient> wercsParts = bomIngredients.Where(p => p.RMSource.ToLower().Contains("wercs")).ToList<BOMIngredient>();
-            DepotOperationResultStatus bos_ret = DbEfFactory.AddDepotBOMRequest(sourceSystem, targetFormulaKey, bomIngredients, rmFormulaLowerLimitValidation, rmFormulaUpperLimitValidation, "BOM Request", UpdatedBy);
+            //loop in get_bos_depot and see if there's errors
+
+            DepotOperationResultStatus bos_ret = DbEfFactory.AddDepotBOMRequest(targetFormulaKey, bomIngredients, rmFormulaLowerLimitValidation, rmFormulaUpperLimitValidation, "BOM Request", UpdatedBy, null);
+
+            List<BOMIngredient> depotParts = bomIngredients.Where(p => p.RMSource.ToLower().Contains("depot")).ToList<BOMIngredient>();
+            //List<BOMIngredient> wercsParts = bomIngredients.Where(p => p.RMSource.ToLower().Contains("wercs")).ToList<BOMIngredient>();
+            if (depotParts?.Any() ?? false)
+            {
+                string prodKeys = string.Join(",", depotParts.Select(a => a.RMKey.ToString()));
+                List<DepotOperationResultStatus> get_bos_depot = ProcessDepotRequest(prodKeys, sourceSystem: "Depot", overrideBOSErrors: true, formulaLowerPercentValidation:0, formulaUpperPercentValidation:0, existingRequestId:bos_ret.RequestId);
+            }
+
             //DepotOperationResultStatus ret = new DepotOperationResultStatus();
             if (bos_ret.RequestId > 0 && string.IsNullOrEmpty(bos_ret.ErrorMessage))
-                bos_ret = DbEfFactory.StageBOMRequest(bos_ret.RequestId, targetFormulaKey, sourceSystem);
+                bos_ret = DbEfFactory.StageBOMRequest(bos_ret.RequestId, targetFormulaKey, "Depot");
 
             return bos_ret;
 
@@ -157,7 +166,7 @@ namespace SDS.SDSRequest.Controllers
             return request_ret;
         }
 
-        public static List<DepotOperationResultStatus> ProcessDepotRequest(string prodKeys, string sourceSystem, bool overrideBOSErrors, int formulaLowerPercentValidation, int formulaUpperPercentValidation, int? existingRequestId = 0)
+        public static List<DepotOperationResultStatus> ProcessDepotRequest(string prodKeys, string sourceSystem, bool overrideBOSErrors, int formulaLowerPercentValidation, int formulaUpperPercentValidation, int? existingRequestId = 0, int? parentBOMRequestId=0, string BOMRequestTargetKey=null)
         //public static List<DepotOperationResultStatus> ProcessDepotRequest(string prodKeys, string sourceSystem, int formulaLowerPercentValidation, int formulaUpperPercentValidation, int? existingRequestId = 0)
         {
             UpdatedBy = GetCurrentUser();
@@ -172,16 +181,67 @@ namespace SDS.SDSRequest.Controllers
                 lookupKeys = prodKeysCommaDelimited.Replace(" ", "").Split(','); //allow only one or no spaces between commas
             }
             else
+            {
                 lookupKeys = DbEfFactory.GetUnprocessedRequestParts(existingRequestId.GetValueOrDefault()); //allow only one or no spaces between commas
-
+            }
             //Dictionary<string, DepotPart> results;
+            DepotOperationResultStatus bos_ret = new DepotOperationResultStatus();
             using (var depot = new DepotClient(depotAccessRecord.DepotUrl, depotAccessRecord.DepotUser, depotAccessRecord.DepotPass, new TimeSpan(0, depotAccessRecord.DepotClientTimeoutInMinutes, 0)))
             {
+                string errorMsg = "";
                 Dictionary<string, DepotPart> bestparts = (depot.Parts.FindBestPartsByKeys(lookupKeys) ?? new List<DepotPart>(0))
                                                                       .ToDictionary(p => p.PartSrcKey, p => p, StringComparer.OrdinalIgnoreCase);
 
-                DepotOperationResultStatus bos_ret = DbEfFactory.AddDepotFormulaRequest(prodKeysCommaDelimited, formulaLowerPercentValidation, formulaUpperPercentValidation, bestparts, "Depot", "Formula Request", UpdatedBy);
+                if (bestparts.Count == 0)
+                {
+                    //bos_ret.RequestedPart = sourcekey;
+                    if (parentBOMRequestId > 0)
+                    {
+                        bos_ret.ResultCount = 0;
+                        bos_ret.RequestId = parentBOMRequestId.GetValueOrDefault();
+                        //bos_ret.ProcessedPartKey=
+                        bos_ret.ErrorMessage = "Error encountered, no bestparts found for "+ prodKeysCommaDelimited +" in BOM Request# "+ parentBOMRequestId.GetValueOrDefault().ToString() + " or service may not be available.";
+                        DbEfFactory.UpdateBOSLoadStatus("bom_load_failed", UpdatedBy, bos_ret);
+                    }
+                    else
+                    {
+                        bos_ret.ResultCount = 0;
+                        bos_ret.ErrorMessage = "Error encountered, no bestparts found for " + prodKeysCommaDelimited + ", or service may not be available.";
+                        DbEfFactory.UpdateBOSLoadStatus("bos_load_failed", UpdatedBy, bos_ret);
+                    }
+                    request_ret.Add(new DepotOperationResultStatus(bos_ret));
+                    return request_ret;
+                }
 
+                if (bestparts.Count > 0 && bestparts.Count < lookupKeys.Length)
+                {
+                    errorMsg = "";
+                    foreach (string mykey in lookupKeys)
+                    {
+                        if (!bestparts.ContainsKey(mykey))
+                        {
+                            errorMsg += mykey + ",";
+                        }
+                    }
+                    errorMsg = "The following key(s) are missing bestpart: " + errorMsg.TrimEnd(',');
+                    bos_ret.ErrorMessage = "Error encountered, " + errorMsg + " in BOM Request# " + parentBOMRequestId.GetValueOrDefault().ToString() + ".";
+                    //bos_ret.ResultCount = 0;
+                    bos_ret.RequestId = parentBOMRequestId.GetValueOrDefault();
+                    request_ret.Add(new DepotOperationResultStatus(bos_ret));
+
+
+                    DbEfFactory.UpdateBOSLoadStatus("bom_load_failed", UpdatedBy, bos_ret);
+                    return request_ret;
+                }
+                if (parentBOMRequestId == 0)
+                    bos_ret = DbEfFactory.AddDepotFormulaRequest(prodKeysCommaDelimited, formulaLowerPercentValidation, formulaUpperPercentValidation, bestparts, "Depot", "Formula Request", UpdatedBy);
+                else
+                {
+                    //write PartName, PartType, etc. in the formula_request_queue table...
+                    bos_ret = DbEfFactory.UpdateBOMRequestDepotFormula(prodKeysCommaDelimited, formulaLowerPercentValidation, formulaUpperPercentValidation, bestparts, "Depot", parentBOMRequestId.GetValueOrDefault(), BOMRequestTargetKey, UpdatedBy);
+                    bos_ret.RequestId = parentBOMRequestId.GetValueOrDefault();
+                    bos_ret.StatusCode = "0";
+                }
                 foreach (KeyValuePair<string, DepotPart> thispart in bestparts)
                 {
                     //ICalculatedComponentsResult result = depot.BillOfSubstance.GetCalculatedComponentsForBestPart(sourcekey, forSds: true, requireSDSSpecific: false, includeFragranceComposition: true);
@@ -219,15 +279,11 @@ namespace SDS.SDSRequest.Controllers
                         try
                         {
                             DepotPart part = result?.SourceParts?.FirstOrDefault();
-                            //Console.WriteLine($"No Parts for {key}");
                             bos_ret.RequestedPart = part.PartSrcKey;
-                            //bos_ret.RequestedPart = bos.SourceParts[0].PartSrcRevision;
                             bos_ret.ProcessedPartKey = part.PartKey; //part.PartSrcKey+"."+part.PartSrcRevision;
                             bos_ret.PartTypeName = part.PartTypeName;
-                            //string partName = part.PartName;
-                            //partName = part.PartGbuName;
                             DbEfFactory.UpdateBOSLoadStatus("bos_load_started", UpdatedBy, bos_ret);
-
+                            /*
                             IEnumerable<string> attrNameFilter = new[]{"PRIMARY CAS #","Primary CAS Region", "CAS #"};
                             //IEnumerable<string> partKeys = new[] { part.PartKey };
 
@@ -235,9 +291,9 @@ namespace SDS.SDSRequest.Controllers
                             List<DepotPartAttribute> partMultiCASAttributes=null;
                             if ((partKeys?.Count() ?? 0) >0)
                                 partMultiCASAttributes = depot.Parts.GetPartAttributesByPartKeys(partKeys, attrNameFilter);
+                            */
 
-
-                            r = DbEfFactory.SaveDepotRequestBos(bos_ret.RequestId, bos_ret.RequestedPart, sourceSystem, UpdatedBy, result, partMultiCASAttributes);
+                            r = DbEfFactory.SaveDepotRequestBos(bos_ret.RequestId, bos_ret.RequestedPart, sourceSystem, UpdatedBy, result, partMultiCASAttributes: null);
                             bos_ret.ResultCount = result.CalculatedComponents?.Count() ?? -1; // bos?.Count() ?? -1;
                             if (bos_ret.ResultCount == -1)
                                 DbEfFactory.UpdateBOSLoadStatus("bos_load_completed_with_errors", UpdatedBy, bos_ret);

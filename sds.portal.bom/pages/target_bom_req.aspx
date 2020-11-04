@@ -30,7 +30,7 @@
 
     <tr>
     <td>
-        <asp:Label>List of Materials, on the format RM, Percent; (example: 90791941_DEPOT,20):</asp:Label>
+        <asp:Label>List of Materials, on the format RM, Percent; (example: 10ZENPRE2611_SDSOWND,20):</asp:Label>
     </td>
     </tr>
 

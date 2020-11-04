@@ -23,8 +23,8 @@
                 <table border="0">
                 <tr>
                     <td class= "navbar-brand" width="300" class= "navbar-brand">The P&G SDS Support System</td>
-                    <td class="navbar-text" align="left" width="150"><a href="../FormulaImportRequest/DepotRequestIndex" class="navbar-text">Depot Import Requests </a></td>
-                    <td class="navbar-text" align="left" width="150"><a href="../FormulaImportRequest/BOMRequestIndex" class="navbar-text">BOM Import Requests </a></td>
+                    <!-- <td class="navbar-text" align="left" width="150"><a href="../FormulaImportRequest/DepotRequestIndex" class="navbar-text">Depot Import Requests </a></td> -->
+                    <td class="navbar-text" align="left" width="150"><a href="../BOMRequest/BOMRequestIndex" class="navbar-text">BOM Import Requests </a></td>
                     <td class="navbar-text" align="left" width="50"><a href="../AppMenus/About" class="navbar-text">About </a></td>
                     <td class="navbar-text" align="left" width="80"><a href="../AppMenus/Contact" class="navbar-text">Contact </a></td>
                     <td class="navbar-text" width="120" align="right"><span class="navbar-text">Hello, <%=Page.User.Identity.Name%>!</span></td>

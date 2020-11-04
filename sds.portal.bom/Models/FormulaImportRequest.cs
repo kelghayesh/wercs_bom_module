@@ -80,11 +80,12 @@ namespace SDS.SDSRequest.Models
         public int RequestQueueId { get; set; }
         public int RequestId { get; set; }
         public string BOMTargetKey { get; set; }
-        public int ValidationStatus { get; set; }
+        public int? ValidationStatus { get; set; }
         public string MaterialKey { get; set; }
         public string MaterialSource { get; set; }
         public decimal? MaterialPercent { get; set; }
         public string UpdatedBy { get; set; }
+        public string LoadStatusMessage { get; set; }
         public DateTime? CreatedTimestamp { get; set; }
 
     }

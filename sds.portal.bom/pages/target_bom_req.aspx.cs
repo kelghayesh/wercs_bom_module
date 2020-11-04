@@ -34,18 +34,32 @@ namespace SDS.Portal.Web.pages
 
         private void ProcessBOMRequest(string bom_sourceSystem, string targetFormulaKey, int rmFormulaLowerLimitValidation, int rmFormulaUpperLimitValidation, List<BOMIngredient> bomIngredients)
         {
-            DepotOperationResultStatus ret;
-            ret = PassFormulaController.ProcessDepotBOMRequest(bom_sourceSystem, targetFormulaKey, rmFormulaLowerLimitValidation, rmFormulaUpperLimitValidation, bomIngredients);
+            List<DepotOperationResultStatus> bos_ret;
+            System.Web.HttpContext httpContext = System.Web.HttpContext.Current;
+            BOMRequestController bomrc = new BOMRequestController(httpContext);
 
-            if (string.IsNullOrEmpty(ret.ErrorMessage))
+            bos_ret = bomrc.ProcessDepotBOMRequest(targetFormulaKey, rmFormulaLowerLimitValidation, rmFormulaUpperLimitValidation, bomIngredients);
+            bool bom_process_success = true;
+            string errorMsg = "";
+            foreach (DepotOperationResultStatus ret in bos_ret)
             {
-                //MonitorBOMRequestProcess(264, "SDSOWND_Target_09");
-                MonitorBOMRequestProcess(ret.RequestId, targetFormulaKey);
+                if (!string.IsNullOrEmpty(ret.ErrorMessage))
+                {
+                    errorMsg += ret.ErrorMessage + ",";
+                    //PassResultDisplayDiv.InnerHtml += "<span style='color:#000000'>" + " " + ret.ErrorMessage + "</span>";
+                    bom_process_success = false;
+                }
+            }
+
+            if (bom_process_success)
+            {
+                //MonitorBOMRequestProcess(ret.RequestId, targetFormulaKey);
+                MonitorBOMRequestProcess(bos_ret.FirstOrDefault().RequestId, targetFormulaKey);
                 PassResultDisplayDiv.InnerHtml = "<span style='color:#000000'>" + "Request queued and will be processed " + "</span>";
 
             }
             else
-               PassResultDisplayDiv.InnerHtml = "<span style='color:#000000'>" + "Errors encountered:  " + ret.ErrorMessage + "</span>";
+                PassResultDisplayDiv.InnerHtml = "<span style='color:#000000'>" + "  " + errorMsg.TrimEnd(',') + "</span>";
 
         }
 
@@ -54,6 +68,16 @@ namespace SDS.Portal.Web.pages
             PassResultDisplayDiv.InnerHtml = "";
         }
 
+        private string getKeySource(string SrcKey)
+        {
+            //int gcascode;
+            //bool isnumericGcas = int.TryParse(SrcKey.Substring(1, 8), out gcascode);
+            bool isInWercs = SrcKey.Contains("SDSOWND");
+            
+            if (isInWercs)
+                return "Wercs";
+            else return "Depot";
+        }
         private List<BOMIngredient> getBOMIngredients(bool overrideFormulaSource, List<string> rmList)
         {
             List<BOMIngredient> bomIngredients = new List<BOMIngredient>();
@@ -89,7 +113,8 @@ namespace SDS.Portal.Web.pages
                     }
                     rm.RMKey = rmArr[0];        //rm_item.Substring(0, rm_item.IndexOf(','));
                     rm.RMPercent = Convert.ToDecimal(rmArr[1]);    //Convert.ToDecimal(rm_item.Substring(rm_item.IndexOf(',') + 1, rm_item.IndexOf('%') - (rm_item.IndexOf(',') + 1)));
-                    rm.RMSource = "WERCS";
+                    //rm.RMSource = "WERCS";
+                    rm.RMSource = getKeySource(rm.RMKey); //Depot or WERCS based on...
                     bomIngredients.Add(rm);
                 }
             }
@@ -110,6 +135,10 @@ namespace SDS.Portal.Web.pages
             //MonitorBOMRequestProcess(259, "SDSOWND_Target_06");
 
             string BOMSourceSystem = ConfigurationManager.AppSettings["BOMSourceSystem"];
+            string BOM100PercentInputValidation = ConfigurationManager.AppSettings["BOM100PercentInputValidation"];
+            bool BomPercentValidation = false;
+            bool.TryParse(BOM100PercentInputValidation, out BomPercentValidation);
+
             string TargetFormulaKey = txtTargetBOM.Value;
             string RMKeys = txtRMList.Value;
             RMKeys = Regex.Replace(RMKeys, @"\r\n?|\n", ";"); //replace CR with semi-colon
@@ -136,16 +165,18 @@ namespace SDS.Portal.Web.pages
 
                 List<BOMIngredient> bomIngredients = getBOMIngredients(overrideFormulaSource, rmList);
 
-
-                decimal sumpercent = bomIngredients.Sum(item => item.RMPercent);
-                if (sumpercent != 100)
+                if (BomPercentValidation == true)
                 {
-                    throw new System.ArgumentException("The make up of all Raw Materials must add up to exactly 100", "Incorrect Percentages of RM provided");
+                    decimal sumpercent = bomIngredients.Sum(item => item.RMPercent);
+                    if (sumpercent != 100)
+                    {
+                        throw new System.ArgumentException("The make up of all Raw Materials must add up to exactly 100", "Incorrect Percentages of RM provided");
+                    }
                 }
                 int lowerLimitValidation = 0, upperLimitValidation = 0;
 
-                string RMLowerLimitValidation = ConfigurationManager.AppSettings["BOMBuildingBlockLowerLimitValidation"];
-                string RMUpperLimitValidation = ConfigurationManager.AppSettings["BOMBuildingBlockUpperLimitValidation"];
+                string RMLowerLimitValidation = ConfigurationManager.AppSettings["BOSLowerLimitValidation"];
+                string RMUpperLimitValidation = ConfigurationManager.AppSettings["BOSUpperLimitValidation"];
 
                 if (Int32.TryParse(RMLowerLimitValidation, out lowerLimitValidation) && Int32.TryParse(RMUpperLimitValidation, out upperLimitValidation))
                 {

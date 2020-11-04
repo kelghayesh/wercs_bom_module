@@ -28,11 +28,6 @@ namespace SDS.SDSRequest.Controllers
             return View(DbEfFactory.GetFormulaImportRequestsList(FormulaImportRequestType.DEPOT_REQUEST));
         }
 
-        public ActionResult BOMRequestIndex()
-        {
-            //return View(db.FormulaImportRequestListItems.ToList());
-            return View(DbEfFactory.GetFormulaImportRequestsList(FormulaImportRequestType.BOM_REQUEST));
-        }
 
         public RedirectResult RedirectToBOMStatusPage(string RequestId)
         {
@@ -47,7 +42,14 @@ namespace SDS.SDSRequest.Controllers
             else
                 return View(DbEfFactory.GetFormulaImportRequestQueueByProductList(productKeyList, sourceSystem));
         }
-        
+
+        /*
+        public ActionResult BOMRequestIndex()
+        {
+            //return View(db.FormulaImportRequestListItems.ToList());
+            return View(DbEfFactory.GetFormulaImportRequestsList(FormulaImportRequestType.BOM_REQUEST));
+        }
+
         public ActionResult BOMRequestQueueIndex(int id, string productKeyList, string sourceSystem)
         {
             if (string.IsNullOrEmpty(productKeyList))
@@ -55,7 +57,7 @@ namespace SDS.SDSRequest.Controllers
             else
                 return View(DbEfFactory.GetFormulaImportRequestQueueByProductList(productKeyList, sourceSystem));
         }
-        
+        */
 
         [HttpPost]
         public FileResult RequestQueueExport(int id, string sourceSystem)

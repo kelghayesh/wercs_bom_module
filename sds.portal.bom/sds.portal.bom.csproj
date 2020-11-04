@@ -194,6 +194,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AppMenusController.cs" />
+    <Compile Include="Controllers\BOMRequestController.cs" />
     <Compile Include="Controllers\FormulaImportRequestController.cs" />
     <Compile Include="Controllers\PassFormulaController.cs" />
     <Compile Include="DAL\SDSRequestDbContext.cs" />
@@ -307,10 +308,10 @@
     <Content Include="Views\FormulaImportRequest\RequestQueueItemBOSIndex.cshtml" />
     <Content Include="Views\FormulaImportRequest\RequestActivitiesIndex.cshtml" />
     <Content Include="Views\FormulaImportRequest\RequestQueueItemMessagesIndex.cshtml" />
-    <Content Include="Views\FormulaImportRequest\BOMRequestIndex.cshtml" />
     <Content Include="Views\AppMenus\About.cshtml" />
     <Content Include="Views\AppMenus\Contact.cshtml" />
-    <Content Include="Views\FormulaImportRequest\BOMRequestQueueIndex.cshtml" />
+    <Content Include="Views\BOMRequest\BOMRequestIndex.cshtml" />
+    <Content Include="Views\BOMRequest\BOMRequestQueueIndex.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
