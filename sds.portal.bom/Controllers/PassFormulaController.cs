@@ -96,6 +96,8 @@ namespace SDS.SDSRequest.Controllers
             DbEfFactory.StartDTE();
 
         }
+
+        /*
         public static DepotOperationResultStatus ProcessDepotBOMRequest(string targetFormulaKey, int rmFormulaLowerLimitValidation, int rmFormulaUpperLimitValidation, List<BOMIngredient> bomIngredients, int? existingRequestId = 0)
         {
             //assumptions: all formulations are in WERCS, so we don't need to go to Depot for anything here.
@@ -120,11 +122,12 @@ namespace SDS.SDSRequest.Controllers
 
             //DepotOperationResultStatus ret = new DepotOperationResultStatus();
             if (bos_ret.RequestId > 0 && string.IsNullOrEmpty(bos_ret.ErrorMessage))
-                bos_ret = DbEfFactory.StageBOMRequest(bos_ret.RequestId, targetFormulaKey, "Depot");
+                bos_ret = DbEfFactory.ProcessBOMRequest(bos_ret.RequestId, targetFormulaKey, "Depot");
 
             return bos_ret;
 
         }
+        */
 
         public static List<DepotOperationResultStatus> TEST_ProcessDepotGetCalculatedBosRequest(string prodKeys, string sourceSystem, bool overrideBOSErrors, int formulaLowerPercentValidation, int formulaUpperPercentValidation, int? existingRequestId = 0)
         {

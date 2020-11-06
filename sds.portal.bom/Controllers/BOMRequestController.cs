@@ -125,9 +125,13 @@ namespace SDS.SDSRequest.Controllers
             
             if (depotLoadSuccess)  //if no depotParts or depotParts processed successfully 
             {
-                DepotOperationResultStatus savebomdetail_ret = DbEfFactory.StageBOMRequest(savebom_ret.RequestId, targetFormulaKey, "Wercs");
-                DbEfFactory.StartDTE();  //this may already be incoporated in StageBOMRequest
-                bos_ret.Add(savebomdetail_ret);
+                string processBOMRequest = ConfigurationManager.AppSettings["ProcessBOMRequest"] ?? "true";
+                if (string.Compare(processBOMRequest, "true", ignoreCase:true) == 0)
+                {
+                    DepotOperationResultStatus savebomdetail_ret = DbEfFactory.ProcessBOMRequest(savebom_ret.RequestId, targetFormulaKey, "Wercs");
+                    DbEfFactory.StartDTE();  //this may already be incoporated in StageBOMRequest
+                    bos_ret.Add(savebomdetail_ret);
+                }
             }
             
             //end comment

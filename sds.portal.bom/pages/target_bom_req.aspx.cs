@@ -6,6 +6,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using PG.Gps.DepotClient.Model;
 using System.Configuration;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using SDS.SDSRequest.Models;
 using SDS.SDSRequest.Controllers;
@@ -133,6 +134,12 @@ namespace SDS.Portal.Web.pages
             //DepotOperationResultStatus ret = PassFormulaController.ProcessDepotBOMRequest("wercs", "SDSOWND_Target_09", 0, 0, null);
 
             //MonitorBOMRequestProcess(259, "SDSOWND_Target_06");
+
+            /*
+            string processBOMRequest = ConfigurationManager.AppSettings["ProcessBOMRequest"] ?? "false";
+            if (string.Compare(processBOMRequest, "true", ignoreCase: true) == 0)
+                Debug.Print("Go ahead!");
+            */
 
             string BOMSourceSystem = ConfigurationManager.AppSettings["BOMSourceSystem"];
             string BOM100PercentInputValidation = ConfigurationManager.AppSettings["BOM100PercentInputValidation"];

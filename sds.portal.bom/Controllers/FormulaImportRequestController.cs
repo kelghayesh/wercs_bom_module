@@ -116,7 +116,7 @@ namespace SDS.SDSRequest.Controllers
         {
             if (confirm)
             {
-                DbEfFactory.StageBOMRequest(id, "", SourceSystem);
+                DbEfFactory.ProcessBOMRequest(id, "", SourceSystem);
             }
 
             //return RedirectToAction("RequestQueueIndex");

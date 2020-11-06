@@ -872,7 +872,7 @@ namespace SDS.SDSRequest.Factory
             return ret;
         }
 
-        public static DepotOperationResultStatus StageBOMRequest(int requestId, string TargetPart, string SourceSystem)
+        public static DepotOperationResultStatus ProcessBOMRequest(int requestId, string TargetPart, string SourceSystem)
         {
             //SDSRequestDbContext db = new SDSRequestDbContext();
             //WercsDbContext dbwercs = new WercsDbContext();
