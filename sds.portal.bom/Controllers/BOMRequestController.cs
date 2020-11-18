@@ -10,6 +10,7 @@ using PG.Gps.DepotClient.Model;
 using PG.Gps.DepotClient;
 using System.Text.RegularExpressions;
 using SDS.SDSRequest.DAL;
+using System.Threading.Tasks;
 
 namespace SDS.SDSRequest.Controllers
 {
@@ -68,10 +69,41 @@ namespace SDS.SDSRequest.Controllers
             return View(DbEfFactory.GetFormulaImportRequestsList(FormulaImportRequestType.BOM_REQUEST));
         }
 
-        public List<DepotOperationResultStatus> ProcessDepotBOMRequest(string targetFormulaKey, int rmFormulaLowerLimitValidation, int rmFormulaUpperLimitValidation, List<BOMIngredient> bomIngredients, int? parentBOMRequestId=0, string BOMRequestTargetKey=null)
+        private DepotOperationResultStatus ValidateBOMRequest(string targetFormulaKey, List<BOMIngredient> bomIngredients)
+        {
+            DepotOperationResultStatus validatebom_ret = new DepotOperationResultStatus();
+            if (targetFormulaKey?.Length > 50)
+            {
+                validatebom_ret.ErrorReceived = true;
+                validatebom_ret.ErrorMessage = "Target Key can not be more than 50 characters long";
+                return validatebom_ret;
+            }
+            foreach (BOMIngredient bi in bomIngredients)
+            {
+                if (bi.RMKey?.Length > 40)
+                {
+                    validatebom_ret.ErrorReceived = true;
+                    validatebom_ret.ErrorMessage = "A raw material key can not be more than 40 characters long";
+                    return validatebom_ret;
+                }
+            }
+            validatebom_ret.ErrorMessage = null;
+            validatebom_ret.SuccessMessage = "Validation OK";
+            return validatebom_ret;
+        }
+
+        public async Task<List<DepotOperationResultStatus>> ProcessDepotBOMRequest(string targetFormulaKey, int rmFormulaLowerLimitValidation, int rmFormulaUpperLimitValidation, List<BOMIngredient> bomIngredients, int? parentBOMRequestId=0, string BOMRequestTargetKey=null)
         {
             //assumptions: all formulations are in WERCS, so we don't need to go to Depot for anything here.
             //if a formula for a material in the BOM isn't in WERCS, it should be imported into WERCS before starting the BOM formula request
+
+            List<DepotOperationResultStatus> bos_ret = new List<DepotOperationResultStatus>();
+            DepotOperationResultStatus validatebom_ret = ValidateBOMRequest(targetFormulaKey, bomIngredients);
+            if (validatebom_ret.ErrorMessage?.Length > 0)
+            {
+                bos_ret.Add(validatebom_ret);
+                return bos_ret;
+            }
             UpdatedBy = GetCurrentUser();
 
             //List<DepotOperationResultStatus> request_ret = new List<DepotOperationResultStatus>();
@@ -81,7 +113,6 @@ namespace SDS.SDSRequest.Controllers
             //loop in get_bos_depot and see if there's errors
 
             string RequestSourceSystem = "WERCS";
-            List<DepotOperationResultStatus> bos_ret = new List<DepotOperationResultStatus>();
             DepotOperationResultStatus savebom_ret = DbEfFactory.AddDepotBOMRequest(targetFormulaKey, bomIngredients, rmFormulaLowerLimitValidation, rmFormulaUpperLimitValidation, "BOM Request", UpdatedBy, RequestSourceSystem);
             bos_ret.Add(savebom_ret);
 
@@ -99,7 +130,7 @@ namespace SDS.SDSRequest.Controllers
             if (depotParts?.Any() ?? false)
             {
                 prodKeys = string.Join(",", depotParts.Select(a => a.RMKey.ToString()));
-                get_bos_depot = PassFormulaController.ProcessDepotRequest(prodKeys, sourceSystem: "Depot", overrideBOSErrors: true, formulaLowerPercentValidation: 0, formulaUpperPercentValidation: 0, existingRequestId:0, parentBOMRequestId: savebom_ret.RequestId, BOMRequestTargetKey: targetFormulaKey);
+                get_bos_depot = await PassFormulaController.ProcessDepotRequest(prodKeys, sourceSystem: "Depot", overrideBOSErrors: true, formulaLowerPercentValidation: 0, formulaUpperPercentValidation: 0, existingRequestId:0, parentBOMRequestId: savebom_ret.RequestId, BOMRequestTargetKey: targetFormulaKey);
 
                 foreach (DepotOperationResultStatus ret in get_bos_depot)
                 {

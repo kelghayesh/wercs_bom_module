@@ -241,7 +241,7 @@ namespace SDS.SDSRequest.Factory
             return xmlresult.Replace("'", "''");
         }
 
-        public static int AddRequest(Request sdsrequest)
+        public static int AddRequest(Models.Request sdsrequest)
         {
             //SDSRequestDbContext db = new SDSRequestDbContext();
             //WercsDbContext dbwercs = new WercsDbContext();
@@ -286,7 +286,7 @@ namespace SDS.SDSRequest.Factory
 
         }
 
-        public static void UpdateRequest(Request sdsrequest)
+        public static void UpdateRequest(Models.Request sdsrequest)
         {
             //SDSRequestDbContext db = new SDSRequestDbContext();
             //WercsDbContext dbwercs = new WercsDbContext();
@@ -506,14 +506,14 @@ namespace SDS.SDSRequest.Factory
         }
 
 
-        public static Request GetRequest(int requestId)
+        public static Models.Request GetRequest(int requestId)
         {
             //SDSRequestDbContext db = new SDSRequestDbContext();
             //WercsDbContext dbwercs = new WercsDbContext();
             SqlParameter requestIdParam = new SqlParameter { ParameterName = "requestId", Value = requestId };
             using (SDSRequestDbContext db = new SDSRequestDbContext())
             {
-                var sdsrequests = db.Database.SqlQuery<Request>("exec usp_SDSREQ_GetRequest @requestId ", requestIdParam); //.ToList<RequestListItem>());
+                var sdsrequests = db.Database.SqlQuery<Models.Request>("exec usp_SDSREQ_GetRequest @requestId ", requestIdParam); //.ToList<RequestListItem>());
                 return sdsrequests.Single();
             }
         }
