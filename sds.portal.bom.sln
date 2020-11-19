@@ -4,8 +4,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sds.portal.bom", "sds.portal.bom\sds.portal.bom.csproj", "{55D96643-E6B1-44EB-80FA-C28A8735B5DC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{85B9FD74-9C01-4E10-800B-3C902FE91BD4} = {85B9FD74-9C01-4E10-800B-3C902FE91BD4}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PG.Gps.DepotClient", "..\PG.Gps.DepotClient\PG.Gps.DepotClient.csproj", "{85B9FD74-9C01-4E10-800B-3C902FE91BD4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PG.Gps.DepotClient", "PG.Gps.DepotClient\PG.Gps.DepotClient.csproj", "{85B9FD74-9C01-4E10-800B-3C902FE91BD4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -10,6 +10,11 @@ using PG.Gps.DepotClient.Model;
 using PG.Gps.DepotClient;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using SDS.SDSRequest.Common;
+using AutoMapper;
 
 namespace SDS.SDSRequest.Controllers
 {
@@ -41,7 +46,35 @@ namespace SDS.SDSRequest.Controllers
             return partKeys;
         }
 
-        public static List<DepotOperationResultStatus> GetPartTypes(string prodKeys, string sourceSystem)
+		public static List<Part> GetBestParts(string srcKeys)
+		{
+			string[] keys = srcKeys.Split(',').Distinct().ToArray().Where(x => !string.IsNullOrEmpty(x)).ToArray(); //remove duplicate and empty array elements
+
+			List<string> revKeys = new List<string>();
+
+			string depotUser = depotAccessRecord.DepotUser;
+			string depotPwd = depotAccessRecord.DepotPass;
+
+			var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{depotUser}:{depotPwd}"));
+			var depotAuth = new AuthenticationHeaderValue("Basic", credentials);
+
+			using (HttpClient client = new HttpClient())
+			{
+				client.DefaultRequestHeaders.Authorization = depotAuth;
+				var c = new GpsDepotClient(depotAccessRecord.DepotUrl, client);
+
+				Logger.Trace("Calling Parts.GetParts to get best parts only {0}", srcKeys);
+
+				List<Part> partResults = c.GetPartsAsync(new PartControllerGetPartsRequest()
+				{
+					BestPartsOnly = true,
+					SrcKeys = keys,
+				}).GetAwaiter().GetResult().ToList<Part>();
+				return partResults;
+			}
+		}
+
+		public static List<DepotOperationResultStatus> GetPartTypes(string prodKeys, string sourceSystem)
         {
             Dictionary<string, string> productTypes = new Dictionary<string, string>();
             List<DepotOperationResultStatus> request_ret = new List<DepotOperationResultStatus>();
@@ -51,11 +84,25 @@ namespace SDS.SDSRequest.Controllers
             string prodKeysCommaDelimited = Regex.Replace(prodKeys, @"\r\n?|\n", ",");
             string partType = "";
             lookupKeys = prodKeysCommaDelimited.Replace(" ", "").Split(','); //allow only one or no spaces between commas
-            using (var depot = new DepotClient(depotAccessRecord.DepotUrl, depotAccessRecord.DepotUser, depotAccessRecord.DepotPass, new TimeSpan(0, depotAccessRecord.DepotClientTimeoutInMinutes, 0)))
-            {
-                Dictionary<string, DepotPart> bestparts = (depot.Parts.FindBestPartsByKeys(lookupKeys) ?? new List<DepotPart>(0))
-                                                                      .ToDictionary(p => p.PartSrcKey, p => p, StringComparer.OrdinalIgnoreCase);
-                foreach (KeyValuePair<string, DepotPart> thispart in bestparts)
+			IMapper mapper = MapUtil.Mapper;
+			string depotUser = depotAccessRecord.DepotUser;
+			string depotPwd = depotAccessRecord.DepotPass;
+
+			var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{depotUser}:{depotPwd}"));
+			var depotAuth = new AuthenticationHeaderValue("Basic", credentials);
+
+			using (HttpClient client = new HttpClient())
+			{
+				var depot = new GpsDepotClient(depotAccessRecord.DepotUrl, client);
+				string errorMsg = "";
+				Dictionary<string, DepotPart> bestparts = (mapper.Map<List<Part>, List<DepotPart>>(depot.GetPartsAsync(new PartControllerGetPartsRequest()
+															{
+																BestPartsOnly = true,
+																SrcKeys = lookupKeys,
+															}).GetAwaiter().GetResult().ToList<Part>())
+															?? new List<DepotPart>(0)).ToDictionary(p => p.PartSrcKey, p => p, StringComparer.OrdinalIgnoreCase);
+
+				foreach (KeyValuePair<string, DepotPart> thispart in bestparts)
                 {
                     part_ret = new DepotOperationResultStatus();
                     partType = thispart.Value.PartTypeCode;
@@ -144,12 +191,27 @@ namespace SDS.SDSRequest.Controllers
             }
             else
                 lookupKeys = DbEfFactory.GetUnprocessedRequestParts(existingRequestId.GetValueOrDefault()); //allow only one or no spaces between commas
-            using (var depot = new DepotClient(depotAccessRecord.DepotUrl, depotAccessRecord.DepotUser, depotAccessRecord.DepotPass, new TimeSpan(0, depotAccessRecord.DepotClientTimeoutInMinutes, 0)))
-            {
-                Dictionary<string, DepotPart> bestparts = (depot.Parts.FindBestPartsByKeys(lookupKeys) ?? new List<DepotPart>(0))
-                                                                      .ToDictionary(p => p.PartSrcKey, p => p, StringComparer.OrdinalIgnoreCase);
 
-                DepotOperationResultStatus bos_ret = DbEfFactory.AddDepotFormulaRequest(prodKeysCommaDelimited, formulaLowerPercentValidation, formulaUpperPercentValidation, bestparts, "Depot", "Formula Request", UpdatedBy);
+			IMapper mapper = MapUtil.Mapper;
+			string depotUser = depotAccessRecord.DepotUser;
+			string depotPwd = depotAccessRecord.DepotPass;
+
+			var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{depotUser}:{depotPwd}"));
+			var depotAuth = new AuthenticationHeaderValue("Basic", credentials);
+
+			using (HttpClient client = new HttpClient())
+			{
+				var depot = new GpsDepotClient(depotAccessRecord.DepotUrl, client);
+				string errorMsg = "";
+				Dictionary<string, DepotPart> bestparts = (mapper.Map<List<Part>, List<DepotPart>>(depot.GetPartsAsync(new PartControllerGetPartsRequest()
+															{
+																BestPartsOnly = true,
+																SrcKeys = lookupKeys,
+															}).GetAwaiter().GetResult().ToList<Part>())
+															?? new List<DepotPart>(0)).ToDictionary(p => p.PartSrcKey, p => p, StringComparer.OrdinalIgnoreCase);
+
+
+				DepotOperationResultStatus bos_ret = DbEfFactory.AddDepotFormulaRequest(prodKeysCommaDelimited, formulaLowerPercentValidation, formulaUpperPercentValidation, bestparts, "Depot", "Formula Request", UpdatedBy);
 
                 ICalculatedComponentsResult result;
                 foreach (KeyValuePair<string, DepotPart> thispart in bestparts)
@@ -157,10 +219,11 @@ namespace SDS.SDSRequest.Controllers
                     //ICalculatedComponentsResult result = depot.BillOfSubstance.GetCalculatedComponentsForBestPart(sourcekey, forSds: true, requireSDSSpecific: false, includeFragranceComposition: true);
                     //thispart.PartKey = "91119915.004";
                     //ICalculatedComponentsResult result = depot.BillOfSubstance.GetCalculatedComponentsForPart(thispart.Value, forSds: true, includeFragranceComposition: true, requireSDSSpecific: false);
-                    result=depot.BillOfSubstance.GetCalculatedAssessmentSpec(thispart.Value.ToString(),
-                                                                                                    forSds: true,
-                                                                                                    includeFragranceComposition: true
-                                                                                                     );
+                    result=depot.GetCalculatedComponentsForPartAsync(part: thispart.Value,
+                                                                    forSds: true,
+                                                                    includeFragranceComposition: true,
+																	includeGpsConfidentialComposition: false
+                                                                        ).GetAwaiter().GetResult();
 
                     bos_ret.ResultCount = result.CalculatedComponents?.Count() ?? 0;
                     //more processing it... just testing various methods of the depot.BillOfSubstance
@@ -169,7 +232,7 @@ namespace SDS.SDSRequest.Controllers
             return request_ret;
         }
 
-        public static List<DepotOperationResultStatus> ProcessDepotRequest(string prodKeys, string sourceSystem, bool overrideBOSErrors, int formulaLowerPercentValidation, int formulaUpperPercentValidation, int? existingRequestId = 0, int? parentBOMRequestId=0, string BOMRequestTargetKey=null)
+        public static async Task<List<DepotOperationResultStatus>> ProcessDepotRequest(string prodKeys, string sourceSystem, bool overrideBOSErrors, int formulaLowerPercentValidation, int formulaUpperPercentValidation, int? existingRequestId = 0, int? parentBOMRequestId=0, string BOMRequestTargetKey=null)
         //public static List<DepotOperationResultStatus> ProcessDepotRequest(string prodKeys, string sourceSystem, int formulaLowerPercentValidation, int formulaUpperPercentValidation, int? existingRequestId = 0)
         {
             UpdatedBy = GetCurrentUser();
@@ -188,12 +251,29 @@ namespace SDS.SDSRequest.Controllers
                 lookupKeys = DbEfFactory.GetUnprocessedRequestParts(existingRequestId.GetValueOrDefault()); //allow only one or no spaces between commas
             }
             //Dictionary<string, DepotPart> results;
+
+
+
             DepotOperationResultStatus bos_ret = new DepotOperationResultStatus();
-            using (var depot = new DepotClient(depotAccessRecord.DepotUrl, depotAccessRecord.DepotUser, depotAccessRecord.DepotPass, new TimeSpan(0, depotAccessRecord.DepotClientTimeoutInMinutes, 0)))
-            {
-                string errorMsg = "";
-                Dictionary<string, DepotPart> bestparts = (depot.Parts.FindBestPartsByKeys(lookupKeys) ?? new List<DepotPart>(0))
-                                                                      .ToDictionary(p => p.PartSrcKey, p => p, StringComparer.OrdinalIgnoreCase);
+			IMapper mapper = MapUtil.Mapper;
+			string depotUser = depotAccessRecord.DepotUser;
+			string depotPwd = depotAccessRecord.DepotPass;
+
+			var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{depotUser}:{depotPwd}"));
+			var depotAuth = new AuthenticationHeaderValue("Basic", credentials);
+
+
+			List<Part> bestpartsList = GetBestParts(prodKeysCommaDelimited);
+
+			using (HttpClient client = new HttpClient())
+			{
+				client.DefaultRequestHeaders.Authorization = depotAuth;
+				var depot = new GpsDepotClient(depotAccessRecord.DepotUrl, client);
+				string errorMsg = "";
+				List<DepotPart> depotPartsList = mapper.Map<List<Part>, List<DepotPart>>(bestpartsList);
+				Dictionary<string, DepotPart> bestparts = depotPartsList.ToDictionary(p => p.PartSrcKey, p => p, StringComparer.OrdinalIgnoreCase);
+              //  Dictionary<string, DepotPart> bestparts = (mapper.Map<List<Part>, List<DepotPart>>().GetAwaiter().GetResult().ToList<Part>())
+														//?? new List<DepotPart>(0)).ToDictionary(p => p.PartSrcKey, p => p, StringComparer.OrdinalIgnoreCase);
 
                 if (bestparts.Count == 0)
                 {
@@ -250,12 +330,12 @@ namespace SDS.SDSRequest.Controllers
                     //ICalculatedComponentsResult result = depot.BillOfSubstance.GetCalculatedComponentsForBestPart(sourcekey, forSds: true, requireSDSSpecific: false, includeFragranceComposition: true);
                     //thispart.PartKey = "91119915.004";
                     //ICalculatedComponentsResult result = depot.BillOfSubstance.GetCalculatedComponentsForPart(thispart.Value, forSds: true, includeFragranceComposition: true, requireSDSSpecific: false);
-                    ICalculatedComponentsResult result = depot.BillOfSubstance.GetCalculatedComponentsForPart(thispart.Value,
-                                                                                                    forSds: true,
-                                                                                                    includeFragranceComposition: true,
-                                                                                                    requireSDSSpecific: false,
-                                                                                                    partTypesForAssessmentSpecs: null,
-                                                                                                    allowResultWhenBosErrors: overrideBOSErrors);
+                    ICalculatedComponentsResult result = await depot.GetCalculatedComponentsForPartAsync(thispart.Value,
+																				forSds: true,
+																				includeFragranceComposition: true,
+																				requireSDSSpecific: false,
+																				partTypesForAssessmentSpecs: null,
+																				allowResultWhenBosErrors: overrideBOSErrors);
                     //use mypartTypesForAssessmentSpecs to override default values
 
                     bos_ret.ResultCount = result.CalculatedComponents?.Count() ?? 0;

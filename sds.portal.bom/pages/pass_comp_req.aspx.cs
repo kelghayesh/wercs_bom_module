@@ -119,7 +119,7 @@ namespace SDS.SDSRequest.DepotClientPage
 
         }
 
-        protected void ProcessDepotRequest(string SourceSystem, string productKeys, int formulaLowerLimitValidation, int formulaUpperLimitValidation, bool AllowResultWhenBosErrors)
+        protected async void ProcessDepotRequest(string SourceSystem, string productKeys, int formulaLowerLimitValidation, int formulaUpperLimitValidation, bool AllowResultWhenBosErrors)
         //protected void ProcessDepotRequest(string SourceSystem, string productKeys, int formulaLowerLimitValidation, int formulaUpperLimitValidation, bool PullRMOnly)
         {
             List<DepotOperationResultStatus> ret;
@@ -134,7 +134,7 @@ namespace SDS.SDSRequest.DepotClientPage
 
             //if (PullRMOnly==false || (PullRMOnly==true && RMRequestValidated))
             //{
-            ret = PassFormulaController.ProcessDepotRequest(productKeys, SourceSystem, AllowResultWhenBosErrors, formulaLowerLimitValidation, formulaUpperLimitValidation);
+            ret = await PassFormulaController.ProcessDepotRequest(productKeys, SourceSystem, AllowResultWhenBosErrors, formulaLowerLimitValidation, formulaUpperLimitValidation);
             DisplayRequestResult(ret);
             //}
         }

@@ -10,6 +10,7 @@ using PG.Gps.DepotClient.Model;
 using PG.Gps.DepotClient;
 using System.Text.RegularExpressions;
 using SDS.SDSRequest.DAL;
+using System.Threading.Tasks;
 
 namespace SDS.SDSRequest.Controllers
 {
@@ -68,7 +69,7 @@ namespace SDS.SDSRequest.Controllers
             return View(DbEfFactory.GetFormulaImportRequestsList(FormulaImportRequestType.BOM_REQUEST));
         }
 
-        public List<DepotOperationResultStatus> ProcessDepotBOMRequest(string targetFormulaKey, int rmFormulaLowerLimitValidation, int rmFormulaUpperLimitValidation, List<BOMIngredient> bomIngredients, int? parentBOMRequestId=0, string BOMRequestTargetKey=null)
+        public async Task<List<DepotOperationResultStatus>> ProcessDepotBOMRequest(string targetFormulaKey, int rmFormulaLowerLimitValidation, int rmFormulaUpperLimitValidation, List<BOMIngredient> bomIngredients, int? parentBOMRequestId=0, string BOMRequestTargetKey=null)
         {
             //assumptions: all formulations are in WERCS, so we don't need to go to Depot for anything here.
             //if a formula for a material in the BOM isn't in WERCS, it should be imported into WERCS before starting the BOM formula request
@@ -99,7 +100,7 @@ namespace SDS.SDSRequest.Controllers
             if (depotParts?.Any() ?? false)
             {
                 prodKeys = string.Join(",", depotParts.Select(a => a.RMKey.ToString()));
-                get_bos_depot = PassFormulaController.ProcessDepotRequest(prodKeys, sourceSystem: "Depot", overrideBOSErrors: true, formulaLowerPercentValidation: 0, formulaUpperPercentValidation: 0, existingRequestId:0, parentBOMRequestId: savebom_ret.RequestId, BOMRequestTargetKey: targetFormulaKey);
+                get_bos_depot = await PassFormulaController.ProcessDepotRequest(prodKeys, sourceSystem: "Depot", overrideBOSErrors: true, formulaLowerPercentValidation: 0, formulaUpperPercentValidation: 0, existingRequestId:0, parentBOMRequestId: savebom_ret.RequestId, BOMRequestTargetKey: targetFormulaKey);
 
                 foreach (DepotOperationResultStatus ret in get_bos_depot)
                 {

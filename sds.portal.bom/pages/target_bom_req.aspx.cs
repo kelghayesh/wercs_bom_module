@@ -33,13 +33,13 @@ namespace SDS.Portal.Web.pages
             Response.Redirect("target_bom_result.aspx?RequestId="+ RequestId.ToString()+ "&targetFormulaKey="+ targetFormulaKey, false);
         }
 
-        private void ProcessBOMRequest(string bom_sourceSystem, string targetFormulaKey, int rmFormulaLowerLimitValidation, int rmFormulaUpperLimitValidation, List<BOMIngredient> bomIngredients)
+        private async void ProcessBOMRequest(string bom_sourceSystem, string targetFormulaKey, int rmFormulaLowerLimitValidation, int rmFormulaUpperLimitValidation, List<BOMIngredient> bomIngredients)
         {
             List<DepotOperationResultStatus> bos_ret;
             System.Web.HttpContext httpContext = System.Web.HttpContext.Current;
             BOMRequestController bomrc = new BOMRequestController(httpContext);
 
-            bos_ret = bomrc.ProcessDepotBOMRequest(targetFormulaKey, rmFormulaLowerLimitValidation, rmFormulaUpperLimitValidation, bomIngredients);
+            bos_ret = await bomrc.ProcessDepotBOMRequest(targetFormulaKey, rmFormulaLowerLimitValidation, rmFormulaUpperLimitValidation, bomIngredients);
             bool bom_process_success = true;
             string errorMsg = "";
             foreach (DepotOperationResultStatus ret in bos_ret)

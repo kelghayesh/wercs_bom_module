@@ -1,0 +1,21 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>PG.Gps.DepotClient</id>
+    <title>Gps DepotClient</title>
+    <version>1.0.0</version>
+    <authors>GPS Development Team</authors>
+    <owners>Michael Benton, Sheri Hope</owners>
+    <projectUrl>https://bdc-intra1010.na.pg.com/gps/Compass</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Gps DepotClient</description>
+	<dependencies>
+		<dependency id="Newtonsoft.Json" version="8.0.3"/>
+		<dependency id="NLog" version="4.4.13" />
+	</dependencies>
+  </metadata>
+  <files>
+      <file src="bin\Debug\DepotClient.dll" target="lib" />
+      <file src="bin\Debug\DepotClient.pdb" target="lib" />
+  </files>  
+</package>
