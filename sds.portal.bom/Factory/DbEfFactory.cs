@@ -922,9 +922,17 @@ namespace SDS.SDSRequest.Factory
                     uploadStage = 1;
                     bosLoadMessage = "BOS Load for " + bos_ret.ProcessedPartKey + " started";
                     break;
+                case "bom_load_started":
+                    uploadStage = 1;
+                    bosLoadMessage = "BOM Load for " + bos_ret.ProcessedPartKey + " started";
+                    break;
                 case "bos_load_completed":
                     uploadStage = 10;
                     bosLoadMessage = "BOS Load for " + bos_ret.ProcessedPartKey + " completed. Count=" + bos_ret.ResultCount;
+                    break;
+                case "bom_load_completed":
+                    uploadStage = 10;
+                    bosLoadMessage = "BOM Load for " + bos_ret.ProcessedPartKey + " completed. Count=" + bos_ret.ResultCount;
                     break;
                 case "bos_load_missing":
                     uploadStage = 90;
@@ -940,8 +948,8 @@ namespace SDS.SDSRequest.Factory
                     bosLoadMessage = "BOS Load for " + bos_ret.ProcessedPartKey + " failed: " + bos_ret.ErrorMessage;
                     break;
                 case "bom_load_failed":
-                    uploadStage = 100;
-                    bosLoadMessage = "BOS Load for " + bos_ret.ProcessedPartKey + " failed: " + bos_ret.ErrorMessage;
+                    uploadStage = 99;
+                    bosLoadMessage = "BOM Load for " + bos_ret.ProcessedPartKey + " failed: " + bos_ret.ErrorMessage;
                     break;
                 case "bos_request_failed":
                     uploadStage = 101;

@@ -145,17 +145,19 @@ namespace SDS.SDSRequest.Controllers
                 {
                     bos_ret.Add(new DepotOperationResultStatus { RequestId = savebom_ret.RequestId, SuccessMessage = "Import of BOS for " + prodKeys + " from Depot completed successfully." });
                 }
+
+                //don't check depotLoadSuccess here... Request will be processed regardless and all errors (depot and wercs) will be on the status (result) page
+                /*
                 else
                 {
                     return bos_ret;
                 }
+                */
             }
-            //if no depotParts or depotParts processed successfully 
-            //comment out following until later...
-            
-            
-            if (depotLoadSuccess)  //if no depotParts or depotParts processed successfully 
-            {
+
+            //don't check depotLoadSuccess here... Request will be processed regardless and all errors (depot and wercs) will be on the result/status page
+            //if (depotLoadSuccess)  //if no depotParts or depotParts processed successfully 
+            //{
                 string processBOMRequest = ConfigurationManager.AppSettings["ProcessBOMRequest"] ?? "true";
                 if (string.Compare(processBOMRequest, "true", ignoreCase:true) == 0)
                 {
@@ -163,9 +165,8 @@ namespace SDS.SDSRequest.Controllers
                     DbEfFactory.StartDTE();  //this may already be incoporated in StageBOMRequest
                     bos_ret.Add(savebomdetail_ret);
                 }
-            }
+            //}
             
-            //end comment
             return bos_ret;
         }
 

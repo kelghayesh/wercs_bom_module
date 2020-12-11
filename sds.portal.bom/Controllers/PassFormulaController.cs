@@ -284,6 +284,7 @@ namespace SDS.SDSRequest.Controllers
                         bos_ret.RequestId = parentBOMRequestId.GetValueOrDefault();
                         //bos_ret.ProcessedPartKey=
                         bos_ret.ErrorMessage = "Error encountered, no bestparts found for "+ prodKeysCommaDelimited +" in BOM Request# "+ parentBOMRequestId.GetValueOrDefault().ToString() + " or service may not be available.";
+                        bos_ret.ErrorReceived = true;
                         DbEfFactory.UpdateBOSLoadStatus("bom_load_failed", UpdatedBy, bos_ret);
                     }
                     else
@@ -308,13 +309,15 @@ namespace SDS.SDSRequest.Controllers
                     }
                     errorMsg = "The following key(s) are missing bestpart: " + errorMsg.TrimEnd(',');
                     bos_ret.ErrorMessage = "Error encountered, " + errorMsg + " in BOM Request# " + parentBOMRequestId.GetValueOrDefault().ToString() + ".";
+                    bos_ret.ErrorReceived = true;
                     //bos_ret.ResultCount = 0;
                     bos_ret.RequestId = parentBOMRequestId.GetValueOrDefault();
                     request_ret.Add(new DepotOperationResultStatus(bos_ret));
 
 
                     DbEfFactory.UpdateBOSLoadStatus("bom_load_failed", UpdatedBy, bos_ret);
-                    return request_ret;
+
+                    //return request_ret;
                 }
                 if (parentBOMRequestId == 0)
                     bos_ret = DbEfFactory.AddDepotFormulaRequest(prodKeysCommaDelimited, formulaLowerPercentValidation, formulaUpperPercentValidation, bestparts, "Depot", "Formula Request", UpdatedBy);
@@ -346,7 +349,8 @@ namespace SDS.SDSRequest.Controllers
                         bos_ret.RequestedPart = thispart.Key;
                         bos_ret.ProcessedPartKey = "";
                         //bos_ret.ErrorMessage = "No Parts Found for " + sourcekey;
-                        bos_ret.ErrorMessage = "No Parts Found for " + thispart.Key;
+                        bos_ret.ErrorMessage = "No Parts Found for " + thispart.Key +" in BOM Request# " + parentBOMRequestId.GetValueOrDefault().ToString() + ".";
+                        bos_ret.ErrorReceived = true;
                         bos_ret.ResultCount = 0;
                         //request_ret.Add(new DepotOperationResultStatus(bos_ret));
                         DbEfFactory.UpdateBOSLoadStatus("bos_load_missing", UpdatedBy, bos_ret);

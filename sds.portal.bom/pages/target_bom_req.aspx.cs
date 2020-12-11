@@ -52,6 +52,8 @@ namespace SDS.Portal.Web.pages
                 }
             }
 
+            //don't check depotLoadSuccess here... Request will be processed regardless and all errors (depot and wercs) will be on the status (result) page
+            /*
             if (bom_process_success)
             {
                 //MonitorBOMRequestProcess(ret.RequestId, targetFormulaKey);
@@ -61,7 +63,8 @@ namespace SDS.Portal.Web.pages
             }
             else
                 PassResultDisplayDiv.InnerHtml = "<span style='color:#000000'>" + "  " + errorMsg.TrimEnd(',') + "</span>";
-
+            */
+            MonitorBOMRequestProcess(bos_ret.FirstOrDefault().RequestId, targetFormulaKey);
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -124,22 +127,6 @@ namespace SDS.Portal.Web.pages
 
         protected void cmdStageBOM_Click(object sender, EventArgs e)
         {
-            /*
-             * txtRMList is a list of Materials (on the format RM1, x%; RM2, y%; RM3, z%; ...)
-             * launch 2 requests; one to pull all the RMs from Depot. 
-            If this was successful in pulling all the raw materials from Dept, 
-            create another one to create the BOM for the target formula
-            */
-
-            //DepotOperationResultStatus ret = PassFormulaController.ProcessDepotBOMRequest("wercs", "SDSOWND_Target_09", 0, 0, null);
-
-            //MonitorBOMRequestProcess(259, "SDSOWND_Target_06");
-
-            /*
-            string processBOMRequest = ConfigurationManager.AppSettings["ProcessBOMRequest"] ?? "false";
-            if (string.Compare(processBOMRequest, "true", ignoreCase: true) == 0)
-                Debug.Print("Go ahead!");
-            */
 
             string BOMSourceSystem = ConfigurationManager.AppSettings["BOMSourceSystem"];
             string BOM100PercentInputValidation = ConfigurationManager.AppSettings["BOM100PercentInputValidation"];
@@ -149,7 +136,7 @@ namespace SDS.Portal.Web.pages
             string TargetFormulaKey = txtTargetBOM.Value;
             string RMKeys = txtRMList.Value;
             RMKeys = Regex.Replace(RMKeys, @"\r\n?|\n", ";"); //replace CR with semi-colon
-            RMKeys = Regex.Replace(RMKeys, @"\s+", ""); //remove all spaces
+            //RMKeys = Regex.Replace(RMKeys, @"\s+", ""); //remove all spaces --> don't remove spaces per Lee on 11/24/2020
             RMKeys = Regex.Replace(RMKeys, @"%", ""); //remove percent signs. This will keep the percent as a numeric value, simplifying validation
 
             try
@@ -182,8 +169,8 @@ namespace SDS.Portal.Web.pages
                 }
                 int lowerLimitValidation = 0, upperLimitValidation = 0;
 
-                string RMLowerLimitValidation = ConfigurationManager.AppSettings["BOSLowerLimitValidation"];
-                string RMUpperLimitValidation = ConfigurationManager.AppSettings["BOSUpperLimitValidation"];
+                string RMLowerLimitValidation = ConfigurationManager.AppSettings["BOMBuildingBlockLowerLimitValidation"];
+                string RMUpperLimitValidation = ConfigurationManager.AppSettings["BOMBuildingBlockUpperLimitValidation"];
 
                 if (Int32.TryParse(RMLowerLimitValidation, out lowerLimitValidation) && Int32.TryParse(RMUpperLimitValidation, out upperLimitValidation))
                 {
@@ -198,13 +185,6 @@ namespace SDS.Portal.Web.pages
                 PassResultDisplayDiv.InnerHtml = "<span style='color:#FF0000'>"+ ex.Message + "; Or Invalid, missing, or misformatted Raw Material List: " + ex.Message + ". " + ex.InnerException?.Message + "</span>";
             }
 
-            /*
-            int lowerLimitValidation = 0, upperLimitValidation = 0;
-            if (Int32.TryParse(txtLowerLimitValidation.Value.ToString(), out lowerLimitValidation) && Int32.TryParse(txtUpperLimitValidation.Value.ToString(), out upperLimitValidation))
-            {
-                ProcessDepotRequest(SourceSystem, productKeys, lowerLimitValidation, upperLimitValidation, chkRMOnly.Checked);
-            }
-            */
         }
 
     }

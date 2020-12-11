@@ -337,7 +337,7 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\PG.Gps.DepotClient\PG.Gps.DepotClient.csproj">
+    <ProjectReference Include="..\..\wercs_api_client\PG.Gps.DepotClient\PG.Gps.DepotClient.csproj">
       <Project>{85b9fd74-9c01-4e10-800b-3c902fe91bd4}</Project>
       <Name>PG.Gps.DepotClient</Name>
     </ProjectReference>

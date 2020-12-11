@@ -10,7 +10,7 @@
         <!-- <a href="javascript:window.location.reload(true)"> Click here to refresh page</a> -->
         <input type="button" value="Refresh Page" onClick="window.location.reload();">
         &nbsp;
-        <input type="button" id="cmdStartDTE" runat="server" Value="Restart DTE" onserverclick="cmdStartDTE_click" /> 
+        <!-- <input type="button" id="cmdStartDTE" runat="server" Value="Restart DTE" onserverclick="cmdStartDTE_click" />  -->
         <br /><br />
         <asp:Label runat="server" ID="lblBOMResultLabel"></asp:Label> 
         <br />
