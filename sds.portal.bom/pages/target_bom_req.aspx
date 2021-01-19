@@ -1,12 +1,14 @@
 ﻿<%@ Page Async="true" Title="BOM Request Generation" Language="C#" MasterPageFile="~/_master/aspx.master" AutoEventWireup="true" CodeBehind="target_bom_req.aspx.cs" Inherits="SDS.Portal.Web.pages.create_target_bom_req" %>
 
 <asp:Content ID="body_content_holder" ContentPlaceHolderID="body_content_holder" runat="server">
+
     <div style="width:100%">
         <br /><br /><br />
     </div>
   
 
     <table style="width:100%" border="0" >
+
     <!--
     <tr>
     <td align="right">
@@ -22,7 +24,7 @@
     </tr>
     <tr>
     <td>
-        <input style="width:450px;" id="txtTargetBOM" runat="server" value="" />
+        <input style="width:1200px" id="txtTargetBOM" runat="server" value="" />
     </td>
     </tr>
 
@@ -30,13 +32,14 @@
 
     <tr>
     <td>
-        <asp:Label>List of Materials, on the format RM, Percent; (example: 10ZENPRE2611_SDSOWND,20):</asp:Label>
+        <asp:Label> List of Materials, on the format RM, Percent; (example: 10ZENPRE2611_SDSOWND,20):</asp:Label>
     </td>
     </tr>
 
     <tr>
-    <td>
-        <textarea style="width:450px;" cols="50" rows="15" id="txtRMList" runat="server" />
+    <td colspan="2">
+        <textarea style="width:1200px" cols="100" rows="15" id="txtRMList" runat="server" /> 
+
             <!-- value="90791941_DEPOT,20 &#13; 91986616_DEPOT,70 &#13; EXP-19-ES7753_RANDD_CLP,10" -->
     </td>
     </tr>

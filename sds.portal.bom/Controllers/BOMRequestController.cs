@@ -113,6 +113,32 @@ namespace SDS.SDSRequest.Controllers
             //loop in get_bos_depot and see if there's errors
 
             string RequestSourceSystem = "WERCS";
+
+            //added handling of PN in the RM list: 20201222
+            //List<BOMIngredient> pnParts = bomIngredients.Where(p => p.RMSource.ToLower().StartsWith("PN")).ToList<BOMIngredient>();
+            List<BOMIngredient> pnParts = bomIngredients.Where(p => p.RMKey.ToLower().Contains("_pnmaterial")).ToList<BOMIngredient>();
+            if (pnParts?.Any() ?? false)
+            {
+                //string pnKeys = string.Join(",", pnParts.Select(a => a.RMKey.ToString().Replace("_PNMaterial", "")));
+
+                //string[] pnKeysA;
+                //pnKeys = Regex.Replace(pnKeys, @"\r\n?|\n", ",");
+                //pnKeysA = pnKeys.Replace(" ", "").Split(','); //allow only one or no spaces between commas
+                string pncasTogether = "";
+                foreach (BOMIngredient part in bomIngredients)
+                {
+                    if (part.RMKey.ToLower().Contains("_pnmaterial"))
+                    {
+                        pncasTogether = part.RMKey.Replace("_PNMaterial", "");
+                        part.RMKey = pncasTogether.Substring(0, pncasTogether.IndexOf("/"));
+                        part.RMCas = pncasTogether.Substring(pncasTogether.IndexOf("/") + 1);
+                        //decimal rmPercent;
+                        part.RMSource = "Wercs";
+                    }
+                }
+                //get_bos_depot = await PassFormulaController.ProcessDepotRequest(prodKeys, sourceSystem: "Depot", overrideBOSErrors: true, formulaLowerPercentValidation: 0, formulaUpperPercentValidation: 0, existingRequestId: 0, parentBOMRequestId: savebom_ret.RequestId, BOMRequestTargetKey: targetFormulaKey);
+                //DepotOperationResultStatus savebomdetail_ret = DbEfFactory.ProcessBOMRequestPNMaterials(savebom_ret.RequestId, targetFormulaKey, pnParts, "Wercs");
+            }
             DepotOperationResultStatus savebom_ret = DbEfFactory.AddDepotBOMRequest(targetFormulaKey, bomIngredients, rmFormulaLowerLimitValidation, rmFormulaUpperLimitValidation, "BOM Request", UpdatedBy, RequestSourceSystem);
             bos_ret.Add(savebom_ret);
 
@@ -155,16 +181,18 @@ namespace SDS.SDSRequest.Controllers
                 */
             }
 
+
+
             //don't check depotLoadSuccess here... Request will be processed regardless and all errors (depot and wercs) will be on the result/status page
             //if (depotLoadSuccess)  //if no depotParts or depotParts processed successfully 
             //{
-                string processBOMRequest = ConfigurationManager.AppSettings["ProcessBOMRequest"] ?? "true";
-                if (string.Compare(processBOMRequest, "true", ignoreCase:true) == 0)
-                {
-                    DepotOperationResultStatus savebomdetail_ret = DbEfFactory.ProcessBOMRequest(savebom_ret.RequestId, targetFormulaKey, "Wercs");
-                    DbEfFactory.StartDTE();  //this may already be incoporated in StageBOMRequest
-                    bos_ret.Add(savebomdetail_ret);
-                }
+            string processBOMRequest = ConfigurationManager.AppSettings["ProcessBOMRequest"] ?? "true";
+            if (string.Compare(processBOMRequest, "true", ignoreCase:true) == 0)
+            {
+                DepotOperationResultStatus savebomdetail_ret = DbEfFactory.ProcessBOMRequest(savebom_ret.RequestId, targetFormulaKey, "Wercs");
+                DbEfFactory.StartDTE();  //this may already be incoporated in StageBOMRequest
+                bos_ret.Add(savebomdetail_ret);
+            }
             //}
             
             return bos_ret;

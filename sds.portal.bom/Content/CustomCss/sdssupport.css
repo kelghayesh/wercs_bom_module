@@ -1,6 +1,11 @@
 ﻿body {
 }
 
+.bom_entry_input_text {
+    width: 800px;
+    color: darkgreen;
+}
+
 .hintlabel {
     font-size: smaller;
     /*font-weight:lighter;*/

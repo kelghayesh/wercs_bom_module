@@ -159,6 +159,7 @@ namespace SDS.SDSRequest.Models
     public class BOMIngredient
     {
         public string RMKey { get; set; }
+        public string RMCas { get; set; }
         public decimal RMPercent { get; set; }
         public string RMSource { get; set; }
     }

@@ -43,7 +43,7 @@ namespace SDS.SDSRequest.Factory
 
                 XmlElement productKeyElement = xmldoc.CreateElement("Processed_PartKey");
                 XmlText productKeyText = xmldoc.CreateTextNode((productKey ?? requestedGcas).Trim());
-                
+
                 productKeyElement.AppendChild(productKeyText);
                 baseWarning.AppendChild(productKeyElement);
 
@@ -447,7 +447,7 @@ namespace SDS.SDSRequest.Factory
             {
                 return db.Database.SqlQuery<SDSBOS>("exec usp_FORMULAREQ_GetFormulaImportRequestQueueItemBOS @requestQueueId ", requestQueueIdParam).ToList<SDSBOS>();
             }
-            }
+        }
 
         public static List<FormulaImportRequestQueueItem> GetFormulaImportRequestQueueByProductList(string ProductKeyList, string sourceSystem)
         {
@@ -490,7 +490,7 @@ namespace SDS.SDSRequest.Factory
                 return db.Database.SqlQuery<AttributeValuePair>("exec usp_SDSREQ_GetPAttributeValuePairs @ptxt_attribute", ptxt_attribute).ToList<AttributeValuePair>();
                 //return db.Database.SqlQuery<ProductType>("exec usp_SDSREQ_GetPAttributeValuePairs @ptxt_attribute", ptxt_attribute).ToList<ProductType>();
             }
-            }
+        }
 
         public static List<RequestActivityListItem> GetRequestActivities(int requestId)
         {
@@ -669,6 +669,11 @@ namespace SDS.SDSRequest.Factory
                 XmlText rmKeyText = xmldoc.CreateTextNode(key.RMKey.Trim());
                 rmKeyElement.AppendChild(rmKeyText);
                 product.AppendChild(rmKeyElement);
+
+                XmlElement rmCasElement = xmldoc.CreateElement("RMCas");
+                XmlText rmCasText = xmldoc.CreateTextNode(key.RMCas?.Trim());
+                rmCasElement.AppendChild(rmCasText);
+                product.AppendChild(rmCasElement);
 
                 XmlElement rmPercentElement = xmldoc.CreateElement("RMPercent");
                 XmlText rmPercentText = xmldoc.CreateTextNode(key.RMPercent.ToString().Trim());
@@ -872,6 +877,32 @@ namespace SDS.SDSRequest.Factory
             return ret;
         }
 
+        /*
+        public static DepotOperationResultStatus ProcessBOMRequestPNMaterials(int requestId, string TargetPart, List<BOMIngredient> pnParts, string SourceSystem)
+        {
+            DepotOperationResultStatus ret = new DepotOperationResultStatus();
+
+            using (WercsDbContext dbwercs = new WercsDbContext())
+            {
+                dbwercs.Database.CommandTimeout = 3000;
+                foreach (BOMIngredient pnRM in pnParts)
+                {
+                    dbwercs.Database.ExecuteSqlCommand(@"EXEC Xusp_FORMULAREQ_BOMRequest_StagePNMaterial @RequestId,  @TargetPart, @RMKey, @RMCas, @RMPercent, @SourceSystem ",
+                                new SqlParameter("@RequestId", requestId),
+                                new SqlParameter("@TargetPart", TargetPart),
+                                new SqlParameter("@SourceSystem", pnRM.RMKey),
+                                new SqlParameter("@SourceSystem", pnRM.RMCas),
+                                new SqlParameter("@SourceSystem", pnRM.RMPercent),
+                                new SqlParameter("@SourceSystem", SourceSystem)
+                    //,new SqlParameter("@populateWercsStaging", 1)
+                    );
+                }
+                ret.RequestId = requestId;
+                ret.SuccessMessage = "Saved BOM Request details.";
+                return ret;
+            }
+        }
+        */
         public static DepotOperationResultStatus ProcessBOMRequest(int requestId, string TargetPart, string SourceSystem)
         {
             //SDSRequestDbContext db = new SDSRequestDbContext();

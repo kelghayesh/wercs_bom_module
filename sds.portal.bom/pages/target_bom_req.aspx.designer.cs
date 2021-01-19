@@ -7,13 +7,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SDS.Portal.Web.pages
-{
-
-
-    public partial class create_target_bom_req
-    {
-
+namespace SDS.Portal.Web.pages {
+    
+    
+    public partial class create_target_bom_req {
+        
         /// <summary>
         /// txtTargetBOM control.
         /// </summary>
@@ -22,7 +20,7 @@ namespace SDS.Portal.Web.pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputText txtTargetBOM;
-
+        
         /// <summary>
         /// txtRMList control.
         /// </summary>
@@ -31,7 +29,7 @@ namespace SDS.Portal.Web.pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlTextArea txtRMList;
-
+        
         /// <summary>
         /// cmdStageBOM control.
         /// </summary>
@@ -40,7 +38,7 @@ namespace SDS.Portal.Web.pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button cmdStageBOM;
-
+        
         /// <summary>
         /// PassResultDisplayDiv control.
         /// </summary>
@@ -49,7 +47,7 @@ namespace SDS.Portal.Web.pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl PassResultDisplayDiv;
-
+        
         /// <summary>
         /// grdvPassResult control.
         /// </summary>
